@@ -1,0 +1,233 @@
+package main
+
+import "math"
+
+// type flights []Flight
+
+func main() {
+	// fmt.Println("kek")
+
+	var N, M uint32
+	var Path []uint32
+	Path = append(Path, 1)
+	var PathParityMode []bool
+
+	curAirport := 1
+	// prevAirport
+	// fmt.Scanln(&N, &M)
+	// N, M = 3, 3 // -1
+	N, M = 4, 6 // 3
+
+	// var flights flights
+	flights := make(flights, M)
+	airports := make([]Airport, N)
+
+	// flights[0] = Flight{1, 2, false}
+	// flights[1] = Flight{1, 3, true}
+	// flights[2] = Flight{2, 3, false}
+
+	flights[0] = Flight{1, 3, false}
+	flights[1] = Flight{3, 4, false}
+	flights[2] = Flight{3, 4, true}
+	flights[3] = Flight{1, 2, true}
+	flights[4] = Flight{2, 3, true}
+	flights[5] = Flight{2, 4, false}
+
+	for _, v := range flights {
+		airports[v.from-1].flights = append(airports[v.from-1].flights, v)
+	}
+
+	var Graph map [Name]Neighbors
+	for i, v := range airports { 
+		Graph[i] = 
+	}
+
+	// fmt.Println(airports)
+
+	//
+
+	//
+
+	// S := make(map[uint32]bool)
+
+	for {
+
+		notEffFlight := airports[curAirport-1].flights.findLessEffectiveWay()
+		Path = append(Path, notEffFlight.to)
+		PathParityMode = append(PathParityMode, notEffFlight.parity)
+		// fmt.Println(airports[curAirport-1].flights.findLessEffectiveWay())
+		// fmt.Println(Path)
+		// fmt.Println(PathParityMode)
+
+		curAirport = int(notEffFlight.to)
+		if curAirport >= int(N) {
+			break
+		}
+
+	}
+
+}
+
+type Flight struct {
+	from   uint32
+	to     uint32
+	parity bool
+}
+
+type flights []Flight
+
+func (f *flights) findLessEffectiveWay() Flight {
+	var lessEffectiveWayTo uint32 = 4294967295
+	var lessEffectiveWay Flight
+
+	for _, v := range *f {
+		if lessEffectiveWayTo > v.to {
+			lessEffectiveWayTo = v.to
+			lessEffectiveWay = v
+		}
+	}
+	return lessEffectiveWay
+}
+
+type Airport struct {
+	flights flights
+	// parity    bool
+	// wayLength uint32
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+type Name uint32
+
+type Cost uint32
+
+type Neighbors map[Name]Cost
+
+type Result map[Name]Cost
+
+type LowestCost struct {
+	Name Name
+	Cost Cost
+}
+
+var (
+	processed     []Name
+	resultCosts   Result
+	data          map[Name]Neighbors
+	lowestCostTmp LowestCost
+	startNode     Name
+)
+
+func GetPath(d map[Name]Neighbors, startNode Name) Result {
+	initData(d, startNode)
+	processNodeRecursive(&startNode)
+	return resultCosts
+}
+
+func initData(d map[Name]Neighbors, startNode Name) {
+	setStartNode(startNode)
+	setData(d)
+	resetProcessed()
+	resetResultCosts()
+	resetLowestCostTmp()
+}
+
+func setStartNode(s Name) {
+	startNode = s
+}
+
+func resetProcessed() {
+	processed = make([]Name, 0)
+}
+
+func setData(d map[Name]Neighbors) {
+	data = d
+}
+
+func resetResultCosts() {
+	resultCosts = make(map[Name]Cost)
+	for node := range data {
+		resultCosts[node] = getInf()
+	}
+}
+
+func getInf() Cost {
+	return math.MaxUint8
+}
+
+func isNodeProcessed(nodeName *Name) bool {
+	for _, v := range processed {
+		if v == *nodeName {
+			return true
+		}
+	}
+	return false
+}
+
+func processNodeRecursive(nodeName *Name) {
+	if isNodeProcessed(nodeName) {
+		return
+	}
+	processed = append(processed, *nodeName)
+	setResultCosts(nodeName)
+	setLowestCostTmp()
+	processNodeRecursive(&lowestCostTmp.Name)
+
+}
+
+func getCostToCurrentNode(nodeName *Name) (c Cost) {
+	if *nodeName == startNode {
+		return 0
+	}
+	return resultCosts[*nodeName]
+}
+
+func setResultCosts(nodeName *Name) {
+	c := getCostToCurrentNode(nodeName)
+	neighbors := data[*nodeName]
+	for neighborName, neighborCost := range neighbors {
+		if !isNodeProcessed(&neighborName) {
+			if (c + neighborCost) < resultCosts[neighborName] {
+				resultCosts[neighborName] = c + neighborCost
+			}
+		}
+	}
+}
+
+func resetLowestCostTmp() {
+	lowestCostTmp.Cost = getInf()
+	lowestCostTmp.Name = ``
+}
+
+func setLowestCostTmp() {
+	prevLowestCostTmp := lowestCostTmp
+	resetLowestCostTmp()
+	for name, cost := range resultCosts {
+		if !isNodeProcessed(&name) {
+			if cost < lowestCostTmp.Cost {
+				if prevLowestCostTmp.Cost != getInf() {
+					lowestCostTmp.Cost = cost + prevLowestCostTmp.Cost
+				} else {
+					lowestCostTmp.Cost = cost
+				}
+				lowestCostTmp.Name = name
+			}
+		}
+	}
+	return
+}
